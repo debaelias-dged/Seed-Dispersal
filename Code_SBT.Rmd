@@ -1,0 +1,430 @@
+---
+title: "Code: SBT"
+author: "Debora Elías Díaz"
+date: "`r format(Sys.Date(), '%Y-%m-%d')`"
+output: html_document
+---
+
+
+
+
+```{r setup, include=FALSE}
+set.seed(888)
+library(knitr)
+knitr::opts_chunk$set(echo = TRUE, out.width = '100%', 
+                      cache = FALSE, message = FALSE)
+```
+
+
+
+```{r, warning=FALSE, message=FALSE}
+library(quantreg)
+library(SparseM)
+library(ggplot2)
+library(ggpubr)
+library(car)
+library(lmtest)
+library(jtools)
+```
+
+
+
+Load Data
+```{r}
+DR <- read.csv("./DT.csv", head=T, sep = ";")
+
+head(DR)
+```
+
+
+
+```{r}
+# quantile: 0.1
+m01 <- rq(formula = Lfru ~ ABH, tau = 0.1,
+                 data = DR)
+
+summ(m01, 
+     scale = FALSE,
+  confint = getOption("summ-confint", FALSE),
+  ci.width = getOption("summ-ci.width", 0.95),
+  se = ("boot"),
+  boot.sims = 10000,
+  digits = 6)
+
+
+summary(m01, se = "boot")
+
+
+
+# Result: quantile 0.1; p < 0.05
+```
+
+
+
+```{r}
+# Predict value
+
+ABH_nuevo2 <- data.frame(ABH = seq(min(DR$ABH), max(DR$ABH), length.out = 100))
+
+# Confidence interval
+pred2 <- predict(m01, newdata = ABH_nuevo2, interval = "confidence", level = 0.95)
+
+df_pred2 <- cbind(ABH_nuevo2, pred2)
+colnames(df_pred2) <- c("ABH", "fit", "lwr", "upr")
+```
+
+
+
+
+```{r}
+# Graph
+
+G2 <- (ggplot() +
+  geom_point(data = DR, aes(x = ABH, y = Lfru), alpha = 0.5, color = "#09622A", size = 2) +  
+  geom_line(data = df_pred2, aes(x = ABH, y = fit), color = "#09622A", size = 1) +  
+  geom_ribbon(data = df_pred2, aes(x = ABH, ymin = lwr, ymax = upr), alpha = 0.5, fill = "#6CA860") + 
+  labs(title = "",
+       x = "Length of Forearm (FA)",
+       y = "Length of Fruit (LF)") +
+      scale_x_continuous(limits = c(33, 65), breaks = seq(33, 65, by = 5)) +
+  theme_classic())
+
+G2
+```
+
+
+
+
+
+```{r}
+# quantile: 0.15
+m02 <- rq(formula = Lfru ~ ABH, tau = 0.15,
+                 data = DR)
+
+summ(m02, 
+     scale = FALSE,
+  confint = getOption("summ-confint", FALSE),
+  ci.width = getOption("summ-ci.width", 0.95),
+  se = ("boot"),
+  boot.sims = 10000,
+  digits = 6)
+
+
+summary(m02)
+
+
+
+# Result: quantile 0.15; p > 0.05
+```
+
+
+
+
+```{r}
+# quantile: 0.2
+m03 <- rq(formula = Lfru ~ ABH, tau = 0.2,
+                 data = DR)
+
+summ(m03, 
+     scale = FALSE,
+  confint = getOption("summ-confint", FALSE),
+  ci.width = getOption("summ-ci.width", 0.95),
+  se = ("boot"),
+  boot.sims = 10000,
+  digits = 6)
+
+
+summary(m03)
+
+
+# Result: quantile 0.2; p > 0.05
+```
+
+
+
+
+
+```{r}
+# quantile: 0.5
+m04 <- rq(formula = Lfru ~ ABH, tau = 0.5,
+                 data = DR)
+
+summ(m04, 
+     scale = FALSE,
+  confint = getOption("summ-confint", FALSE),
+  ci.width = getOption("summ-ci.width", 0.95),
+  se = ("boot"),
+  boot.sims = 10000,
+  digits = 6)
+
+
+summary(m04)
+
+
+
+# Result: quantile 0.5; p > 0.05
+```
+
+
+
+
+
+```{r}
+# Predict value
+ABH_nuevo3 <- data.frame(ABH = seq(min(DR$ABH), max(DR$ABH), length.out = 100))
+
+# Confidence interval
+pred3 <- predict(m04, newdata = ABH_nuevo3, interval = "confidence", level = 0.95)
+
+df_pred3 <- cbind(ABH_nuevo3, pred3)
+colnames(df_pred3) <- c("ABH", "fit", "lwr", "upr")
+```
+
+
+
+
+```{r}
+# Graph 
+
+G3 <- (ggplot() +
+  geom_point(data = DR, aes(x = ABH, y = Lfru), alpha = 0.5, color = "#09622A", size = 2) +  
+  geom_line(data = df_pred3, aes(x = ABH, y = fit), color = "#09622A", size = 1) + 
+  geom_ribbon(data = df_pred3, aes(x = ABH, ymin = lwr, ymax = upr), alpha = 0.5, fill = "#6CA860") +  
+  labs(title = "",
+       x = "Length of Forearm (FA)",
+       y = "Length of Fruit (LF)") +
+      scale_x_continuous(limits = c(33, 65), breaks = seq(33, 65, by = 5)) +
+  theme_classic())
+
+G3
+```
+
+
+
+
+```{r}
+# quantile: 0.8
+m05 <- rq(formula = Lfru ~ ABH, tau = 0.8,
+                 data = DR)
+
+summ(m05, 
+     scale = FALSE,
+  confint = getOption("summ-confint", FALSE),
+  ci.width = getOption("summ-ci.width", 0.95),
+  se = ("boot"),
+  boot.sims = 10000,
+  digits = 6)
+
+
+summary(m05)
+
+
+# Result: quantil 0.8; p > 0.05
+```
+
+
+
+```{r}
+# quantile: 0.85
+m06 <- rq(formula = Lfru ~ ABH, tau = 0.85,
+                 data = DR)
+
+summ(m06, 
+     scale = FALSE,
+  confint = getOption("summ-confint", FALSE),
+  ci.width = getOption("summ-ci.width", 0.95),
+  se = ("boot"),
+  boot.sims = 10000,
+  digits = 6)
+
+
+summary(m06)
+
+
+
+# Result: quantil 0.85; p < 0.05
+```
+
+
+
+
+```{r}
+# Predict value
+ABH_nuevo1 <- data.frame(ABH = seq(min(DR$ABH), max(DR$ABH), length.out = 100))
+
+# Confidence interval
+pred1 <- predict(m06, newdata = ABH_nuevo1, interval = "confidence", level = 0.95)
+
+
+df_pred1 <- cbind(ABH_nuevo1, pred1)
+colnames(df_pred1) <- c("ABH", "fit", "lwr", "upr")
+```
+
+
+
+
+```{r}
+# Graph
+
+G <- (ggplot() +
+  geom_point(data = DR, aes(x = ABH, y = Lfru), alpha = 0.5, color = "#09622A", size = 2) +  
+  geom_line(data = df_pred1, aes(x = ABH, y = fit), color = "#09622A", size = 1) +  
+  geom_ribbon(data = df_pred1, aes(x = ABH, ymin = lwr, ymax = upr), alpha = 0.5, fill = "#6CA860") +  
+  labs(title = "",
+       x = "Length of Forearm (FA)",
+       y = "Length of Fruit (LF)") +
+       scale_x_continuous(limits = c(33, 65), breaks = seq(33, 65, by = 5)) +
+  theme_classic())
+
+G
+```
+
+
+
+
+```{r}
+# quantile: 0.9
+m07 <- rq(formula = Lfru ~ ABH, tau = 0.9,
+                 data = DR)
+
+summ(m07, 
+     scale = FALSE,
+  confint = getOption("summ-confint", FALSE),
+  ci.width = getOption("summ-ci.width", 0.95),
+  se = ("boot"),
+  boot.sims = 10000,
+  digits = 6)
+
+summary(m07)
+```
+
+
+
+
+```{r}
+# Predict value
+ABH_nuevo <- data.frame(ABH = seq(min(DR$ABH), max(DR$ABH), length.out = 100))
+
+# Confidence interval
+pred <- predict(m07, newdata = ABH_nuevo, interval = "confidence", level = 0.95)
+
+
+df_pred <- cbind(ABH_nuevo, pred)
+colnames(df_pred) <- c("ABH", "fit", "lwr", "upr")
+```
+
+
+
+
+
+```{r}
+# Graph 
+
+G1 <- (ggplot() +
+  geom_point(data = DR, aes(x = ABH, y = Lfru), alpha = 0.5, color = "#09622A", size = 2) +  
+  geom_line(data = df_pred, aes(x = ABH, y = fit), color = "#09622A", size = 1) +  
+  geom_ribbon(data = df_pred, aes(x = ABH, ymin = lwr, ymax = upr), alpha = 0.5, fill = "#6CA860") +  
+  labs(title = "",
+       x = "Length of Forearm (FA)",
+       y = "Length of Fruit (LF)") +
+       scale_x_continuous(limits = c(33, 65), breaks = seq(33, 65, by = 5)) +
+  theme_classic())
+
+G1
+```
+
+
+
+
+
+Interaction Network 
+```{r}
+library(permute)
+library(lattice)
+library(vegan)
+library(statnet.common)
+library(network)
+library(bipartite)
+library(RColorBrewer)
+
+```
+
+
+
+Load data
+```{r}
+redbp <- read.csv("./redbp.csv", head=T, sep = ";")
+
+head(redbp)
+```
+
+
+
+```{r}
+web_matrix <- as.matrix(redbp[, -1])  # omit colum 1
+
+# row names
+rownames(web_matrix) <- redbp[, 1]
+
+# Visualization
+mod <- computeModules(web_matrix)
+```
+
+
+```{r}
+# Graph 1
+
+svg("graph_1.svg", width = 10, height = 10)
+
+visweb(web_matrix, square="b",box.col="#1B4F72",box.border="black", plotsize = 3, labsize = 5, pred.lablength = 10, prey.lablength = 10)
+
+dev.off()
+```
+
+
+
+```{r}
+# Bipartite network 
+
+svg("graph_2.svg", width = 10, height = 10)
+
+plotweb(web_sorted, text.rot = 90, col.interaction =c("#E8AC65","#FFCB69","#346F1F", "#275317", "#D9AE94","#F1DCA7", "#DBBB6B", "#F4E5C0"), col.high = c("#E8AC65","#FFCB69","#346F1F", "#275317", "#D9AE94","#F1DCA7", "#DBBB6B", "#F4E5C0", bor.col.interaction = c("#E8AC65","#FFCB69","#346F1F", "#275317", "#D9AE94","#F1DCA7", "#DBBB6B", "#F4E5C0"), bor.col.high=c("#E8AC65","#FFCB69","#346F1F", "#275317", "#D9AE94","#F1DCA7", "#DBBB6B", "#F4E5C0")), labsize = 0.8, y.width.low=0.05, y.width.high=0.05, y.lim=c(-1,2.0))
+
+dev.off()
+```
+
+
+
+```{r}
+# Calculate network metric links per species for all 
+networklevel(web_matrix)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
